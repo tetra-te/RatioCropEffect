@@ -19,4 +19,4 @@
 3. `RatioCropEffect`という名前のフォルダを削除する。
 
 ## ライセンス
-[Unlicense License](./LICENSE)
+[Unlicense license](./LICENSE)
