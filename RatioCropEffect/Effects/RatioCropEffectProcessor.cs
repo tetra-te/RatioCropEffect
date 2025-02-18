@@ -10,9 +10,7 @@ namespace RatioCropEffect.Effects
     internal class RatioCropEffectProcessor(IGraphicsDevicesAndContext devices, RatioCropEffect item) : VideoEffectProcessorBase(devices)
     {
         readonly ID2D1DeviceContext deviceContext = devices.DeviceContext;
-        
-        ID2D1Image input;
-        
+            
         bool isFirst = true;
 
         bool centering;
@@ -21,20 +19,20 @@ namespace RatioCropEffect.Effects
 
         AffineTransform2DInterpolationMode interpolationMode;
 
-        Crop cropEffect;
+        Crop? cropEffect;
 
-        AffineTransform2D centeringEffect;
+        AffineTransform2D? centeringEffect;
 
         protected override void setInput(ID2D1Image? input)
         {
-            this.input = input;
-            cropEffect.SetInput(0, input, true);
+            cropEffect?.SetInput(0, input, true);
         }
         protected override ID2D1Image? CreateEffect(IGraphicsDevicesAndContext devices)
         {
             cropEffect = new Crop(devices.DeviceContext);
             disposer.Collect(cropEffect);
             centeringEffect = new AffineTransform2D(devices.DeviceContext);
+            disposer.Collect(centeringEffect);
             using (var image = cropEffect.Output)
             {
                 centeringEffect.SetInput(0, image, true);
@@ -45,6 +43,8 @@ namespace RatioCropEffect.Effects
         }
         public override DrawDescription Update(EffectDescription effectDescription)
         {
+            if (cropEffect is null || centeringEffect is null)
+                return effectDescription.DrawDescription;
             var inputRect = deviceContext.GetImageLocalBounds(input);
             var width = inputRect.Right - inputRect.Left;
             var height = inputRect.Bottom - inputRect.Top;
@@ -91,8 +91,8 @@ namespace RatioCropEffect.Effects
         }
         protected override void ClearEffectChain()
         {
-            cropEffect.SetInput(0, null, true);
-            centeringEffect.SetInput(0, null, true);
+            cropEffect?.SetInput(0, null, true);
+            centeringEffect?.SetInput(0, null, true);
         }
     }
 }
